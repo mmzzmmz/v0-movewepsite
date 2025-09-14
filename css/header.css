@@ -1,0 +1,70 @@
+@import url("https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 10px;
+  font-family: "Roboto", sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: #fff;
+}
+
+header {
+  width: 100%;
+  background-color: #171a1c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 10rem;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.logo {
+  text-decoration: none;
+  width: 7%;
+}
+
+.logo img {
+  width: 100%;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+nav ul li {
+  position: relative;
+  width: fit-content;
+  padding: 10px 0;
+}
+
+nav ul li.active-line::before {
+  content: "";
+  width: 100%;
+  height: 4px;
+  margin-top: 0.5rem;
+  border-radius: 5px;
+  background-color: #ff640a;
+  position: absolute;
+  bottom: 0;
+}
+
+.nav-links {
+  font-size: 1.7rem;
+  transition: 0.4s;
+}
+
+.nav-links:hover {
+  color: #ff640a;
+}

@@ -1,0 +1,114 @@
+@import url("https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 10px;
+  font-family: "Roboto", sans-serif;
+}
+
+*::selection {
+  color: #ff640a;
+  background-color: #171a1c;
+}
+
+section {
+  padding: 3.5rem 10rem;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 100vh;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.content h1 {
+  font-size: 3rem;
+  color: #fff;
+}
+
+.sub,
+.voit {
+  font-size: 2rem;
+  color: #2e2d2d;
+}
+
+.btn-container {
+  gap: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+button {
+  border: none;
+  outline: none;
+  font-size: 2rem;
+  padding: 1rem;
+}
+
+.btn-watch {
+  width: auto;
+  background-color: #ff640a;
+  color: #000;
+  border-radius: 10px;
+}
+
+.save,
+.add,
+.share,
+.more-option {
+  border: 2px solid #ff640a;
+  color: #ff640a;
+  background-color: transparent;
+}
+
+.details-container {
+  width: 100%;
+  padding: 3rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.overview-content,
+.details-content {
+  width: 45%;
+}
+
+.overview-content p {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #fff;
+  line-height: 3rem;
+}
+
+.details-content {
+  align-self: flex-start;
+}
+
+.sub-span {
+  font-size: 1.5rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.audio,
+.subtitles,
+.genres {
+  color: #2e2d2d;
+  font-size: 1.5rem;
+}
+
+.subtitles {
+  margin: 1.5rem 0;
+}

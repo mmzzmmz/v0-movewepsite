@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="../icon/wepsite-icon.png"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/new.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <section>
+      <div class="option-container">
+        <h1 id="page-title">New Added Movies</h1>
+        <div class="btn-options">
+          <button id="drop-menu-btn">
+            <i class="fa-solid fa-bars"></i>
+            <span>Newest</span>
+          </button>
+          <div id="drop-menu" class="menu">
+            <div class="menu-item active">
+              <i class="fa-solid fa-bars"></i>
+              <span>Newest</span>
+            </div>
+            <div class="menu-item">
+              <span>Popularity</span>
+            </div>
+            <div class="menu-item">
+              <span>Alphabetical</span>
+            </div>
+          </div>
+          <button id="filter-btn">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Filter</span>
+          </button>
+          <div id="filter-menu" class="menu">
+            <div class="filter-section">
+              <h3>Language</h3>
+              <div class="filter-option">
+                <input
+                  type="radio"
+                  id="lang-all"
+                  name="language"
+                  value="all"
+                  checked
+                />
+                <label for="lang-all">All</label>
+              </div>
+              <div class="filter-option">
+                <input
+                  type="radio"
+                  id="lang-subtitled"
+                  name="language"
+                  value="subtitled"
+                />
+                <label for="lang-subtitled">Subtitled</label>
+              </div>
+              <div class="filter-option">
+                <input
+                  type="radio"
+                  id="lang-dubbed"
+                  name="language"
+                  value="dubbed"
+                />
+                <label for="lang-dubbed">Dubbed</label>
+              </div>
+            </div>
+            <div class="filter-section">
+              <h3>Media</h3>
+              <div class="filter-option">
+                <input
+                  type="radio"
+                  id="media-all"
+                  name="media"
+                  value="all"
+                  checked
+                />
+                <label for="media-all">All</label>
+              </div>
+              <div class="filter-option">
+                <input
+                  type="radio"
+                  id="media-series"
+                  name="media"
+                  value="series"
+                />
+                <label for="media-series">Series</label>
+              </div>
+              <div class="filter-option">
+                <input
+                  type="radio"
+                  id="media-movies"
+                  name="media"
+                  value="movies"
+                />
+                <label for="media-movies">Movies</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="movies-card-container">
+        <h1>New Movies</h1>
+        <div class="box" id="box"></div>
+      </div>
+    </section>
+    <script src="../js/header.js"></script>
+    <script type="module" src="../js/script.js"></script>
+    <script type="module" src="../js/card.js"></script>
+    <!-- <script type="module" src="../js/api.js"></script> -->
+  </body>
+</html>
