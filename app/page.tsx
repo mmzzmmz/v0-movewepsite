@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { SearchBar } from "@/components/search-bar"
 import {
   Bars3Icon,
   AdjustmentsHorizontalIcon,
@@ -38,6 +40,7 @@ const BASE_IMG_URL = "https://image.tmdb.org/t/p/original"
 
 export default function MoviesApp() {
   const [movies, setMovies] = useState<Movie[]>([])
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([])
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null)
   const [showDetails, setShowDetails] = useState(false)
@@ -47,10 +50,21 @@ export default function MoviesApp() {
   const [showSortMenu, setShowSortMenu] = useState(false)
   const [showFilterMenu, setShowFilterMenu] = useState(false)
   const [currentView, setCurrentView] = useState<"new" | "popular">("new")
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     fetchMovies()
   }, [currentView])
+
+  useEffect(() => {
+    let filtered = movies
+
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((movie) => movie.original_title.toLowerCase().includes(searchQuery.toLowerCase()))
+    }
+
+    setFilteredMovies(filtered)
+  }, [movies, searchQuery])
 
   const fetchMovies = async () => {
     setLoading(true)
@@ -94,6 +108,10 @@ export default function MoviesApp() {
     setSelectedMovie(movie)
     await fetchMovieDetails(movie.id)
     setShowDetails(true)
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
   }
 
   const containerVariants = {
@@ -163,7 +181,7 @@ export default function MoviesApp() {
     return (
       <AnimatePresence>
         <motion.div
-          className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden"
+          className="min-h-screen bg-gradient-to-br from-background via-primary/10 to-background relative overflow-hidden theme-transition"
           style={{
             backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url(${BASE_IMG_URL}${selectedMovie.poster_path})`,
             backgroundSize: "cover",
@@ -180,7 +198,7 @@ export default function MoviesApp() {
             {[...Array(20)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 bg-white/20 rounded-full"
+                className="absolute w-2 h-2 bg-primary/20 rounded-full"
                 animate={{
                   x: [0, Math.random() * 100, 0],
                   y: [0, Math.random() * 100, 0],
@@ -201,13 +219,13 @@ export default function MoviesApp() {
 
           <div className="relative z-10 container mx-auto px-4 py-8 min-h-screen flex flex-col lg:flex-row items-center gap-8">
             <motion.div
-              className="flex-1 text-white space-y-6"
+              className="flex-1 text-foreground space-y-6"
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
               <motion.h1
-                className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight"
+                className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -221,13 +239,13 @@ export default function MoviesApp() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <Badge variant="secondary" className="bg-purple-600/80 text-white px-3 py-1">
+                <Badge variant="secondary" className="bg-primary/80 text-primary-foreground px-3 py-1">
                   Sub | Dub
                 </Badge>
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-400 text-xl">★</span>
                   <span className="text-lg font-semibold">{selectedMovie.vote_average.toFixed(1)}</span>
-                  <span className="text-gray-300">({selectedMovie.vote_count.toLocaleString()})</span>
+                  <span className="text-muted-foreground">({selectedMovie.vote_count.toLocaleString()})</span>
                 </div>
               </motion.div>
 
@@ -239,7 +257,7 @@ export default function MoviesApp() {
               >
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <PlayIconSolid className="w-5 h-5 mr-2" />
                   Start Watching
@@ -250,7 +268,7 @@ export default function MoviesApp() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="border-blue-400/50 text-blue-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:border-blue-300 rounded-full p-3 bg-slate-800/50 backdrop-blur-sm transition-all duration-300"
+                      className="border-primary/50 text-primary hover:bg-primary/20 hover:border-primary rounded-full p-3 bg-card/50 backdrop-blur-sm transition-all duration-300"
                     >
                       <Icon className="w-5 h-5" />
                     </Button>
@@ -262,7 +280,7 @@ export default function MoviesApp() {
                 <Button
                   variant="outline"
                   onClick={() => setShowDetails(false)}
-                  className="border-cyan-400/50 text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-600/20 hover:to-teal-600/20 hover:border-cyan-300 mt-6 bg-slate-800/50 backdrop-blur-sm transition-all duration-300"
+                  className="border-primary/50 text-primary hover:bg-primary/20 hover:border-primary mt-6 bg-card/50 backdrop-blur-sm transition-all duration-300"
                 >
                   ← Back to Movies
                 </Button>
@@ -275,10 +293,10 @@ export default function MoviesApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background theme-transition">
       {/* Header */}
       <motion.header
-        className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-purple-500/20"
+        className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -286,18 +304,22 @@ export default function MoviesApp() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <motion.h1
-              className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+              className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
               whileHover={{ scale: 1.05 }}
             >
               {currentView === "new" ? "New Added Movies" : "Popular Movies"}
             </motion.h1>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <SearchBar onSearch={handleSearch} placeholder="Search movies..." className="w-full sm:w-64" />
+
+              <ThemeToggle />
+
               <div className="relative">
                 <Button
                   variant="outline"
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="border-blue-500/40 text-blue-200 hover:bg-gradient-to-r hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400 bg-slate-800/60 backdrop-blur-sm transition-all duration-300"
+                  className="border-primary/40 text-primary hover:bg-primary/20 hover:border-primary bg-card/60 backdrop-blur-sm transition-all duration-300"
                 >
                   <Bars3Icon className="w-4 h-4 mr-2" />
                   {sortBy === "newest" ? "Newest" : sortBy === "popularity" ? "Popularity" : "Alphabetical"}
@@ -306,7 +328,7 @@ export default function MoviesApp() {
                 <AnimatePresence>
                   {showSortMenu && (
                     <motion.div
-                      className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md border border-purple-500/30 rounded-lg p-2 min-w-[150px] z-50"
+                      className="absolute top-full mt-2 right-0 bg-card/90 backdrop-blur-md border border-border rounded-lg p-2 min-w-[150px] z-50"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -314,8 +336,8 @@ export default function MoviesApp() {
                       {["newest", "popularity", "alphabetical"].map((option) => (
                         <button
                           key={option}
-                          className={`w-full text-left px-3 py-2 rounded hover:bg-purple-500/20 transition-colors ${
-                            sortBy === option ? "bg-purple-500/30 text-purple-300" : "text-white"
+                          className={`w-full text-left px-3 py-2 rounded hover:bg-primary/20 transition-colors ${
+                            sortBy === option ? "bg-primary/30 text-primary" : "text-foreground"
                           }`}
                           onClick={() => {
                             setSortBy(option)
@@ -334,7 +356,7 @@ export default function MoviesApp() {
                 <Button
                   variant="outline"
                   onClick={() => setShowFilterMenu(!showFilterMenu)}
-                  className="border-blue-500/40 text-blue-200 hover:bg-gradient-to-r hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400 bg-slate-800/60 backdrop-blur-sm transition-all duration-300"
+                  className="border-primary/40 text-primary hover:bg-primary/20 hover:border-primary bg-card/60 backdrop-blur-sm transition-all duration-300"
                 >
                   <AdjustmentsHorizontalIcon className="w-4 h-4 mr-2" />
                   Filter
@@ -343,18 +365,18 @@ export default function MoviesApp() {
                 <AnimatePresence>
                   {showFilterMenu && (
                     <motion.div
-                      className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md border border-purple-500/30 rounded-lg p-4 min-w-[200px] z-50"
+                      className="absolute top-full mt-2 right-0 sm:right-0 left-0 sm:left-auto bg-card/90 backdrop-blur-md border border-border rounded-lg p-4 min-w-[200px] max-w-[280px] z-50 mx-2 sm:mx-0"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
                       <div className="space-y-4">
                         <div>
-                          <h4 className="text-white font-semibold mb-2">Language</h4>
+                          <h4 className="text-foreground font-semibold mb-2">Language</h4>
                           {["all", "subtitled", "dubbed"].map((lang) => (
                             <label
                               key={lang}
-                              className="flex items-center gap-2 text-sm text-gray-300 hover:text-white cursor-pointer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer py-1"
                             >
                               <input
                                 type="radio"
@@ -362,18 +384,18 @@ export default function MoviesApp() {
                                 value={lang}
                                 checked={filterBy.language === lang}
                                 onChange={(e) => setFilterBy((prev) => ({ ...prev, language: e.target.value }))}
-                                className="text-purple-500"
+                                className="text-primary"
                               />
                               {lang.charAt(0).toUpperCase() + lang.slice(1)}
                             </label>
                           ))}
                         </div>
                         <div>
-                          <h4 className="text-white font-semibold mb-2">Media</h4>
+                          <h4 className="text-foreground font-semibold mb-2">Media</h4>
                           {["all", "series", "movies"].map((media) => (
                             <label
                               key={media}
-                              className="flex items-center gap-2 text-sm text-gray-300 hover:text-white cursor-pointer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer py-1"
                             >
                               <input
                                 type="radio"
@@ -381,7 +403,7 @@ export default function MoviesApp() {
                                 value={media}
                                 checked={filterBy.media === media}
                                 onChange={(e) => setFilterBy((prev) => ({ ...prev, media: e.target.value }))}
-                                className="text-purple-500"
+                                className="text-primary"
                               />
                               {media.charAt(0).toUpperCase() + media.slice(1)}
                             </label>
@@ -399,8 +421,8 @@ export default function MoviesApp() {
                   onClick={() => setCurrentView("new")}
                   className={
                     currentView === "new"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg transition-all duration-300"
-                      : "border-blue-500/40 text-blue-200 hover:bg-gradient-to-r hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400 bg-slate-800/60 backdrop-blur-sm transition-all duration-300"
+                      ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg transition-all duration-300"
+                      : "border-primary/40 text-primary hover:bg-primary/20 hover:border-primary bg-card/60 backdrop-blur-sm transition-all duration-300"
                   }
                 >
                   New
@@ -410,8 +432,8 @@ export default function MoviesApp() {
                   onClick={() => setCurrentView("popular")}
                   className={
                     currentView === "popular"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg transition-all duration-300"
-                      : "border-blue-500/40 text-blue-200 hover:bg-gradient-to-r hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400 bg-slate-800/60 backdrop-blur-sm transition-all duration-300"
+                      ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg transition-all duration-300"
+                      : "border-primary/40 text-primary hover:bg-primary/20 hover:border-primary bg-card/60 backdrop-blur-sm transition-all duration-300"
                   }
                 >
                   Popular
@@ -427,27 +449,27 @@ export default function MoviesApp() {
         {loading ? (
           <div className="flex justify-center items-center min-h-[400px]">
             <motion.div
-              className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full"
+              className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             />
           </div>
         ) : (
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mobile-cards-grid"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            {movies.map((movie, index) => (
+            {filteredMovies.map((movie, index) => (
               <motion.div
                 key={movie.id}
                 variants={cardVariants}
                 whileHover="hover"
-                className="group cursor-pointer"
+                className="group cursor-pointer mobile-card"
                 onClick={() => handleMovieClick(movie)}
               >
-                <Card className="bg-black/40 border-purple-500/20 overflow-hidden backdrop-blur-sm hover:border-purple-400/50 transition-all duration-300 h-full">
+                <Card className="bg-card/40 border-border overflow-hidden backdrop-blur-sm hover:border-primary/50 transition-all duration-300 h-full">
                   <div className="relative aspect-[2/3] overflow-hidden">
                     <motion.img
                       src={`${BASE_IMG_URL}${movie.poster_path}`}
@@ -475,7 +497,7 @@ export default function MoviesApp() {
                         >
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             <PlayIcon className="w-4 h-4 mr-1" />
                             Play
@@ -485,18 +507,25 @@ export default function MoviesApp() {
                     </motion.div>
                   </div>
 
-                  <CardContent className="p-4">
-                    <h3 className="text-white font-semibold text-sm line-clamp-2 mb-2 group-hover:text-purple-300 transition-colors">
+                  <CardContent className="p-4 card-content">
+                    <h3 className="text-foreground font-semibold text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors card-title">
                       {movie.original_title}
                     </h3>
-                    <div className="flex justify-between items-center text-xs text-gray-400">
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
                       <span>{movie.release_date}</span>
-                      <span className="text-purple-400">★ {movie.vote_average.toFixed(1)}</span>
+                      <span className="text-primary">★ {movie.vote_average.toFixed(1)}</span>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
+          </motion.div>
+        )}
+
+        {!loading && filteredMovies.length === 0 && searchQuery && (
+          <motion.div className="text-center py-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No movies found</h3>
+            <p className="text-muted-foreground">Try searching with different keywords</p>
           </motion.div>
         )}
       </main>
