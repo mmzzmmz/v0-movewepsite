@@ -14,7 +14,6 @@ import {
   BookmarkIcon,
   PlusIcon,
   ShareIcon,
-  EllipsisVerticalIcon,
 } from "@heroicons/react/24/outline"
 import { PlayIcon as PlayIconSolid } from "@heroicons/react/24/solid"
 
@@ -32,6 +31,15 @@ interface Movie {
 
 interface MovieDetails {
   genres: { id: number; name: string }[]
+  runtime: number
+  budget: number
+  revenue: number
+  production_companies: { id: number; name: string; logo_path: string }[]
+  spoken_languages: { english_name: string; name: string }[]
+  tagline: string
+  homepage: string
+  imdb_id: string
+  status: string
 }
 
 const API_KEY =
@@ -51,19 +59,18 @@ export default function MoviesApp() {
   const [showFilterMenu, setShowFilterMenu] = useState(false)
   const [currentView, setCurrentView] = useState<"new" | "popular">("new")
   const [searchQuery, setSearchQuery] = useState("")
+  const [searchLoading, setSearchLoading] = useState(false)
 
   useEffect(() => {
     fetchMovies()
   }, [currentView])
 
   useEffect(() => {
-    let filtered = movies
-
     if (searchQuery.trim()) {
-      filtered = filtered.filter((movie) => movie.original_title.toLowerCase().includes(searchQuery.toLowerCase()))
+      searchMovies(searchQuery)
+    } else {
+      setFilteredMovies(movies)
     }
-
-    setFilteredMovies(filtered)
   }, [movies, searchQuery])
 
   const fetchMovies = async () => {
@@ -86,6 +93,34 @@ export default function MoviesApp() {
       console.error("Error fetching movies:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const searchMovies = async (query: string) => {
+    if (!query.trim()) {
+      setFilteredMovies(movies)
+      return
+    }
+
+    setSearchLoading(true)
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        },
+      )
+      const data = await response.json()
+      setFilteredMovies(data.results || [])
+    } catch (error) {
+      console.error("Error searching movies:", error)
+      setFilteredMovies([])
+    } finally {
+      setSearchLoading(false)
     }
   }
 
@@ -217,75 +252,248 @@ export default function MoviesApp() {
             ))}
           </div>
 
-          <div className="relative z-10 container mx-auto px-4 py-8 min-h-screen flex flex-col lg:flex-row items-center gap-8">
+          <div className="relative z-10 container mx-auto px-4 py-8 min-h-screen">
+            {/* Add Back to Movies button at the top */}
             <motion.div
-              className="flex-1 text-foreground space-y-6"
-              initial={{ opacity: 0, x: -100 }}
+              className="mb-6"
+              initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.1 }}
             >
-              <motion.h1
-                className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+              <Button
+                variant="outline"
+                onClick={() => setShowDetails(false)}
+                className="border-primary/50 text-primary hover:bg-primary/20 hover:border-primary bg-card/50 backdrop-blur-sm transition-all duration-300"
               >
-                {selectedMovie.original_title}
-              </motion.h1>
+                ← Back to Movies
+              </Button>
+            </motion.div>
 
+            <div className="flex flex-col lg:flex-row items-start gap-8">
+              {/* Add movie poster on the left */}
               <motion.div
-                className="flex flex-wrap gap-4 items-center"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                className="flex-shrink-0 w-full lg:w-80"
+                initial={{ opacity: 0, x: -100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
               >
-                <Badge variant="secondary" className="bg-primary/80 text-primary-foreground px-3 py-1">
-                  Sub | Dub
-                </Badge>
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 text-xl">★</span>
-                  <span className="text-lg font-semibold">{selectedMovie.vote_average.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({selectedMovie.vote_count.toLocaleString()})</span>
+                <div className="relative aspect-[2/3] overflow-hidden rounded-xl shadow-2xl">
+                  <img
+                    src={`${BASE_IMG_URL}${selectedMovie.poster_path}`}
+                    alt={selectedMovie.original_title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </div>
               </motion.div>
 
+              {/* Movie Details */}
               <motion.div
-                className="flex flex-wrap gap-3"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                className="flex-1 text-foreground space-y-6"
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
               >
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                <motion.h1
+                  className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
                 >
-                  <PlayIconSolid className="w-5 h-5 mr-2" />
-                  Start Watching
-                </Button>
+                  {selectedMovie.original_title}
+                </motion.h1>
 
-                {[BookmarkIcon, PlusIcon, ShareIcon, EllipsisVerticalIcon].map((Icon, index) => (
-                  <motion.div key={index} whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="border-primary/50 text-primary hover:bg-primary/20 hover:border-primary rounded-full p-3 bg-card/50 backdrop-blur-sm transition-all duration-300"
-                    >
-                      <Icon className="w-5 h-5" />
-                    </Button>
+                {/* Add tagline if available */}
+                {movieDetails?.tagline && (
+                  <motion.p
+                    className="text-lg text-muted-foreground italic"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.45 }}
+                  >
+                    "{movieDetails.tagline}"
+                  </motion.p>
+                )}
+
+                <motion.div
+                  className="flex flex-wrap gap-4 items-center"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Badge variant="secondary" className="bg-primary/80 text-primary-foreground px-3 py-1">
+                    {selectedMovie.original_language.toUpperCase()}
+                  </Badge>
+                  {/* Add movie runtime */}
+                  {movieDetails?.runtime && (
+                    <Badge variant="outline" className="border-primary/50 text-primary px-3 py-1">
+                      {Math.floor(movieDetails.runtime / 60)}h {movieDetails.runtime % 60}m
+                    </Badge>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-400 text-xl">★</span>
+                    <span className="text-lg font-semibold">{selectedMovie.vote_average.toFixed(1)}</span>
+                    <span className="text-muted-foreground">({selectedMovie.vote_count.toLocaleString()})</span>
+                  </div>
+                  <Badge variant="outline" className="border-green-500/50 text-green-400 px-3 py-1">
+                    {selectedMovie.release_date.split("-")[0]}
+                  </Badge>
+                </motion.div>
+
+                {/* Add genres */}
+                {movieDetails?.genres && movieDetails.genres.length > 0 && (
+                  <motion.div
+                    className="flex flex-wrap gap-2"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.55 }}
+                  >
+                    {movieDetails.genres.map((genre) => (
+                      <Badge
+                        key={genre.id}
+                        variant="secondary"
+                        className="bg-accent/20 text-accent border border-accent/30 px-3 py-1"
+                      >
+                        {genre.name}
+                      </Badge>
+                    ))}
                   </motion.div>
-                ))}
-              </motion.div>
+                )}
 
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDetails(false)}
-                  className="border-primary/50 text-primary hover:bg-primary/20 hover:border-primary mt-6 bg-card/50 backdrop-blur-sm transition-all duration-300"
+                {/* Add improved overview */}
+                <motion.div
+                  className="space-y-4"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
                 >
-                  ← Back to Movies
-                </Button>
+                  <h3 className="text-xl font-semibold text-primary">Overview</h3>
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    {selectedMovie.overview || "No overview available for this movie."}
+                  </p>
+                </motion.div>
+
+                {/* Add additional information */}
+                {movieDetails && (
+                  <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card/20 backdrop-blur-sm rounded-xl p-6 border border-border/50"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.65 }}
+                  >
+                    <div className="space-y-3">
+                      <h4 className="text-lg font-semibold text-primary">Movie Info</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Status:</span>
+                          <span className="text-foreground">{movieDetails.status}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Release Date:</span>
+                          <span className="text-foreground">{selectedMovie.release_date}</span>
+                        </div>
+                        {movieDetails.budget > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Budget:</span>
+                            <span className="text-foreground">${movieDetails.budget.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {movieDetails.revenue > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Revenue:</span>
+                            <span className="text-foreground">${movieDetails.revenue.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {movieDetails.spoken_languages && movieDetails.spoken_languages.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-lg font-semibold text-primary">Languages</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {movieDetails.spoken_languages.map((lang, index) => (
+                            <Badge key={index} variant="outline" className="border-primary/30 text-primary text-xs">
+                              {lang.english_name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* Action Buttons */}
+                <motion.div
+                  className="flex flex-wrap gap-3"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <PlayIconSolid className="w-5 h-5 mr-2" />
+                    Start Watching
+                  </Button>
+
+                  {[BookmarkIcon, PlusIcon, ShareIcon].map((Icon, index) => (
+                    <motion.div key={index} whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="border-primary/50 text-primary hover:bg-primary/20 hover:border-primary rounded-full p-3 bg-card/50 backdrop-blur-sm transition-all duration-300"
+                      >
+                        <Icon className="w-5 h-5" />
+                      </Button>
+                    </motion.div>
+                  ))}
+
+                  {/* Add IMDb link if available */}
+                  {movieDetails?.imdb_id && (
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-full px-4 py-3 bg-card/50 backdrop-blur-sm transition-all duration-300"
+                        onClick={() => window.open(`https://www.imdb.com/title/${movieDetails.imdb_id}`, "_blank")}
+                      >
+                        IMDb
+                      </Button>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* Add production companies */}
+                {movieDetails?.production_companies && movieDetails.production_companies.length > 0 && (
+                  <motion.div
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.75 }}
+                  >
+                    <h4 className="text-lg font-semibold text-primary">Production Companies</h4>
+                    <div className="flex flex-wrap gap-4">
+                      {movieDetails.production_companies.slice(0, 4).map((company) => (
+                        <div
+                          key={company.id}
+                          className="flex items-center gap-2 bg-card/30 backdrop-blur-sm rounded-lg px-3 py-2 border border-border/30"
+                        >
+                          {company.logo_path && (
+                            <img
+                              src={`${BASE_IMG_URL}${company.logo_path}`}
+                              alt={company.name}
+                              className="w-8 h-8 object-contain"
+                            />
+                          )}
+                          <span className="text-sm text-foreground">{company.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -446,13 +654,18 @@ export default function MoviesApp() {
 
       {/* Movies Grid */}
       <main className="container mx-auto px-4 py-8">
-        {loading ? (
+        {loading || searchLoading ? (
           <div className="flex justify-center items-center min-h-[400px]">
             <motion.div
               className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             />
+            {searchLoading && (
+              <motion.p className="ml-4 text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                Searching movies...
+              </motion.p>
+            )}
           </div>
         ) : (
           <motion.div
@@ -522,10 +735,10 @@ export default function MoviesApp() {
           </motion.div>
         )}
 
-        {!loading && filteredMovies.length === 0 && searchQuery && (
+        {!loading && !searchLoading && filteredMovies.length === 0 && searchQuery && (
           <motion.div className="text-center py-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h3 className="text-xl font-semibold text-foreground mb-2">No movies found</h3>
-            <p className="text-muted-foreground">Try searching with different keywords</p>
+            <p className="text-muted-foreground">No results found for "{searchQuery}". Try different keywords.</p>
           </motion.div>
         )}
       </main>
