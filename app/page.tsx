@@ -42,6 +42,14 @@ interface MovieDetails {
   status: string
 }
 
+interface Cast {
+  id: number
+  name: string
+  character: string
+  profile_path: string
+  order: number
+}
+
 const API_KEY =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NGNkNzE0NzM0ZmFhNjI4MzViNTFkYWY2ZTc4YjFkNCIsIm5iZiI6MTc1NjI5MDYxMi4xMzkwMDAyLCJzdWIiOiI2OGFlZGUzNDY5NDJmMTdhOWIzZDhhNTEiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.HEvvFu1cWbtbV__4HPN8rwvZa591F7wobIHmWxr2yS4"
 const BASE_IMG_URL = "https://image.tmdb.org/t/p/original"
@@ -51,6 +59,7 @@ export default function MoviesApp() {
   const [filteredMovies, setFilteredMovies] = useState<Movie[]>([])
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null)
+  const [movieCast, setMovieCast] = useState<Cast[]>([])
   const [showDetails, setShowDetails] = useState(false)
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState("newest")
@@ -139,9 +148,26 @@ export default function MoviesApp() {
     }
   }
 
+  const fetchMovieCast = async (movieId: number) => {
+    try {
+      const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits`, {
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      })
+      const data = await response.json()
+      setMovieCast(data.cast?.slice(0, 12) || [])
+    } catch (error) {
+      console.error("Error fetching movie cast:", error)
+      setMovieCast([])
+    }
+  }
+
   const handleMovieClick = async (movie: Movie) => {
     setSelectedMovie(movie)
     await fetchMovieDetails(movie.id)
+    await fetchMovieCast(movie.id)
     setShowDetails(true)
   }
 
@@ -488,6 +514,49 @@ export default function MoviesApp() {
                           )}
                           <span className="text-sm text-foreground">{company.name}</span>
                         </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {movieCast.length > 0 && (
+                  <motion.div
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <h4 className="text-lg font-semibold text-primary">Cast</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {movieCast.map((actor) => (
+                        <motion.div
+                          key={actor.id}
+                          className="group cursor-pointer"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-card/30 border border-border/30 hover:border-primary/50 transition-all duration-300">
+                            {actor.profile_path ? (
+                              <img
+                                src={`${BASE_IMG_URL}${actor.profile_path}`}
+                                alt={actor.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
+                                <span className="text-xs text-muted-foreground text-center px-2">No Image</span>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2">
+                              <p className="text-white text-xs font-semibold line-clamp-2">{actor.name}</p>
+                              <p className="text-gray-300 text-xs line-clamp-1">{actor.character}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-center">
+                            <p className="text-xs font-semibold text-foreground line-clamp-1">{actor.name}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{actor.character}</p>
+                          </div>
+                        </motion.div>
                       ))}
                     </div>
                   </motion.div>
